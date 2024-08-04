@@ -13,6 +13,8 @@ using System.Web.Mvc;
 using System.Configuration;
 using System.Threading;
 using System.Runtime.InteropServices.ComTypes;
+using System.Web.UI.WebControls;
+using Tiktoken;
 
 
 namespace WebApplication4.Controllers
@@ -44,8 +46,25 @@ namespace WebApplication4.Controllers
             public string role { get; set; }
             public string content { get; set; }
         }
+        [HttpPost] // Change to POST
+        public async Task<ActionResult> GetTokenCount(string systemPrompt, int pastMessages = 30, string chatData = null)
+        {
 
-        [HttpGet] // Change to GET request for SSE
+            var encoder = ModelToEncoder.For("gpt-4o"); // or explicitly using new Encoder(new O200KBase())
+            var systemTokens = encoder.CountTokens(systemPrompt); // 2
+            var completiontokens = encoder.Explore(chatData);
+            string totalTokens = string.Empty;
+            //var TotalTokens = systemTokens + completiontokens;
+            var result = new
+            {
+                PrompTokens = systemTokens,
+                Completiontokens = completiontokens,
+                TotalTokens= totalTokens
+            };
+            return new  JsonResult();
+        }
+
+            [HttpPost] // Change to POST
         public async Task<ActionResult> GetAIResponse(string userMessage, string systemPrompt, int pastMessages = 30, string chatData = null)
         {
             using (var httpClient = new HttpClient())
@@ -57,7 +76,8 @@ namespace WebApplication4.Controllers
                 var pastMessagesData = JsonConvert.DeserializeObject<List<ChatMessage>>(chatData) ?? new List<ChatMessage>();
                 // Take only the last 'pastMessages' number of messages
                 var recentMessages = pastMessagesData.Skip(Math.Max(0, pastMessagesData.Count - pastMessages)).ToList();
-
+                // Always add the system message at the beginning
+                recentMessages.Insert(0, new ChatMessage { role = "system", content = systemPrompt });
                 var payload = new
                 {
                     messages = recentMessages, // Use recentMessages in the payload
@@ -74,6 +94,7 @@ namespace WebApplication4.Controllers
                 Response.ContentType = "text/event-stream";
                 Response.CacheControl = "no-cache";
                 Response.BufferOutput = false;
+                string previousContent = "";
 
                 using (var stream = await response.Content.ReadAsStreamAsync())
                 using (var reader = new StreamReader(stream))
@@ -84,13 +105,21 @@ namespace WebApplication4.Controllers
                         if (line.StartsWith("data: ") && line.Contains("\"delta\":"))
                         {
                             var data = line.Substring("data: ".Length);
-                            if (!string.IsNullOrWhiteSpace(data) && data != "[DONE]")
+                            dynamic jsonData = JsonConvert.DeserializeObject(data);
+                            string content = jsonData.choices[0].delta.content;
+                            if (!string.IsNullOrWhiteSpace(content))
                             {
-                                Response.Write($"data: {data}\n\n"); // SSE format
+                                // Add a space ONLY if needed
+                                //if (!previousContent.EndsWith(" ") && !content.StartsWith(" "))
+                                //{
+                                //    content = " " + content;
+                                //}
 
+                                // Return the 'content' property within 'delta'
+                                Response.Write($"data: {content}");
                                 Response.Flush();
-                                Console.WriteLine($"Data sent: {data}"); // Add this line
                                 Thread.Sleep(10);
+                                previousContent = content;
                             }
                         }
                     }

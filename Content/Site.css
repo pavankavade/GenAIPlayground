@@ -19,10 +19,14 @@
     padding: 10px;
 }
 
+/* Style the message input box */
 #userinput {
-    background-color: #444;
-    color: #eee;
-    border: none;
+    resize: vertical; /* Disable manual resizing */
+    overflow-y: auto; /* Add a vertical scrollbar */
+    height: auto;
+    min-height: 38px; /* Set the initial height */
+    max-height: 150px; /* Set the maximum height */
+    flex-shrink: 1; /* Allow the textarea to shrink */
 }
 
 .form-control::placeholder {

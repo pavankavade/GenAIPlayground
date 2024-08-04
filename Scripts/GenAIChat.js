@@ -5,8 +5,8 @@ function sendMessage() {
 
     var systemPrompt = $("#systemprompt").val();
     var pastMessages = $("#pastMessages").val();
-    var aiMessageElement = null;
-    var assistantMessage = ""; // Variable to accumulate the assistant's message
+    var aiMessageElement = null; // Variable to store the AI message element
+
     // Load chat data from localStorage
     var chatData = loadChatData();
 
@@ -17,61 +17,79 @@ function sendMessage() {
     var runButton = $(".btn-primary");
     runButton.html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Stop');
     runButton.prop('disabled', true);
-    console.log(JSON.stringify(chatData))
-    var eventSource = new EventSource('/Home/GetAIResponse?' + $.param({ userMessage: userMessage, systemPrompt: systemPrompt, pastMessages: pastMessages, chatData: JSON.stringify(chatData) }));
 
-    eventSource.onmessage = function (event) {
-        if (event.data !== "[DONE]") {
-            try {
-                var jsonContent = JSON.parse(event.data);
-                if (jsonContent.choices && jsonContent.choices[0].delta && jsonContent.choices[0].delta.content) {
-                    // Accumulate the assistant's message
-                    assistantMessage += jsonContent.choices[0].delta.content;
+    // Use a POST request instead of GET
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", '/Home/GetAIResponse', true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.responseType = 'text';
 
-                    if (aiMessageElement === null) {
-                        // Create the initial AI message element
-                        aiMessageElement = $("<p><b>AI:</b> " + jsonContent.choices[0].delta.content + "</p>");
-                        $("#chatbox").append(aiMessageElement);
-                    } else {
-                        // Update the existing AI message element
-                        aiMessageElement.html("<b>AI:</b> " + assistantMessage);
-                    }
+    var accumulatedText = ""; // Variable to accumulate the full assistant message
+    var lastChar = ""; // Variable to store the last character processed
+    var appendedContentLength = 0; // Variable to track appended content length
 
-                    $("#chatbox").scrollTop($("#chatbox")[0].scrollHeight); // Scroll to bottom
-                }
-            } catch (error) {
-                console.error("Error parsing JSON:", error);
-            }
-        } else {
-            // Streaming is done, now store the complete assistant message in localStorage
-            if (aiMessageElement !== null) {
-                // Add the AI message to the chat data
-                chatData.push({ role: "assistant", content: assistantMessage });
-                saveChatData(chatData);
-            }
+    xhr.onprogress = function () {
+        // Process the streamed data here
+        var responseText = xhr.responseText;
+        console.log(responseText);
 
-            // Reset button state
-            runButton.html('Run (Ctrl + ⏎)');
-            runButton.prop('disabled', false);
-            eventSource.close();
+        if (aiMessageElement === null) {
+            aiMessageElement = $("<p><b>AI:</b> </p>");
+            $("#chatbox").append(aiMessageElement);
         }
 
-        // Save the updated chat data to localStorage
-        saveChatData(chatData);
-    };
+        // Extract all text after the first "data: "
+        var dataStartIndex = responseText.indexOf("data: ") + "data: ".length;
+        var data = responseText.substring(dataStartIndex);
 
-    eventSource.onerror = function (error) {
-        console.error("SSE Error:", error);
-        // Reset button state
+        // Replace all "data: " prefixes and trim only the end
+        data = data.replace(/data: /g, "").trimEnd();
+        // Ignore [DONE]
+        if (data.includes("[DONE]")) {
+            data = data.replace("[DONE]", "");
+        }
+        // Get the new data to append
+        var newData = data.substring(appendedContentLength);
+        // Add the new data to the accumulated text
+        accumulatedText += newData; // Update accumulatedText here
+        // Append the NEW data to the AI message element
+        aiMessageElement.append(newData);
+        $("#chatbox").scrollTop($("#chatbox")[0].scrollHeight);
+
+        // Update the appended content length
+        appendedContentLength = data.length;
+    };
+    xhr.onload = function () {
+        // Streaming is done, now store the complete assistant message in localStorage
+        if (aiMessageElement !== null) {
+            // Add the AI message to the chat data
+            chatData.push({ role: "assistant", content: accumulatedText });
+            saveChatData(chatData);
+            console.log("Saved")
+        }
+
+        // Request completed
         runButton.html('Run (Ctrl + ⏎)');
         runButton.prop('disabled', false);
-        eventSource.close();
     };
 
-    eventSource.onopen = function () {
-        // Connection opened successfully
+    xhr.onerror = function () {
+        // Handle errors
+        console.error("Error during request");
+        runButton.html('Run (Ctrl + ⏎)');
+        runButton.prop('disabled', false);
     };
+
+    // Send the data as JSON in the request body
+    xhr.send(JSON.stringify({
+        userMessage: userMessage,
+        systemPrompt: systemPrompt,
+        pastMessages: pastMessages,
+        chatData: JSON.stringify(chatData)
+    }));
 }
+
+
 
 function loadChatData() {
     var chatData = localStorage.getItem("chatData");
@@ -92,6 +110,38 @@ $("#pastMessages").on("input", function () {
     $("#pastMessagesValue").text($(this).val());
 });
 
+// Load chat history on page load
+$(document).ready(function () {
+
+    loadChatHistory();
+    var savedSystemPrompt = localStorage.getItem("systemPrompt");
+    if (savedSystemPrompt) {
+        $("#systemprompt").val(savedSystemPrompt);
+    }
+
+    autosize($('#userinput'));
+
+    // Get the textarea element
+    var textArea = document.getElementById('userinput'); // Replace 'userinput' with your textarea's ID
+
+    // Initialize the encoder (using cl100k_base as an approximation for GPT-4)
+    var enc = tiktoken.getEncoding("cl100k_base");
+
+    // Function to update the token count
+    function updateTokenCount() {
+        var text = textArea.value;
+        var tokens = enc.encode(text);
+        var tokenCount = tokens.length;
+
+        // Update the UI with the token count (replace 'tokenCount' with your element's ID)
+        document.getElementById('tokenCount').textContent = "Token Count: " + tokenCount;
+    }
+
+    // Update the token count initially and on input
+    updateTokenCount();
+    textArea.addEventListener('input', updateTokenCount);
+});
+
 // Function to load chat history from localStorage and display it
 function loadChatHistory() {
     var chatData = loadChatData();
@@ -106,7 +156,12 @@ function loadChatHistory() {
     $("#chatbox").scrollTop($("#chatbox")[0].scrollHeight); // Scroll to bottom
 }
 
-// Load chat history on page load
-$(document).ready(function () {
-    loadChatHistory();
-});
+
+function saveSystemPrompt() {
+    var systemPrompt = $("#systemprompt").val();
+    localStorage.setItem("systemPrompt", systemPrompt);
+    console.log("System prompt saved:", systemPrompt);
+}
+function setDefaultPrompt() {
+    $("#systemprompt").val("You are a helpful assistant.");
+}

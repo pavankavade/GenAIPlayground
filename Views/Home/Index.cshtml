@@ -16,8 +16,7 @@
                     <div class="card-body">
                         <div id="chatbox"></div>
                         <div class="input-group">
-                            <input type="text" id="userinput" class="form-control" placeholder="Enter user message...">
-                            <div class="input-group-append">
+                            <textarea id="userinput" class="form-control" placeholder="Enter user message..." rows="1"></textarea> <div class="input-group-append">
                                 <button class="btn btn-primary" type="button" onclick="sendMessage()">Run (Ctrl + ⏎)</button>
                             </div>
                         </div>
@@ -31,14 +30,17 @@
                         <div class="form-group">
                             <label for="modelDropdown">Model:</label>
                             <select class="form-control" id="modelDropdown">
-                                <option>gpt-4o-mini-2024-07-18</option>
-                                <option>Another model</option>
-                                <option>Yet another model</option>
+                                <option>gpt-4o</option>
+                                <option>To-Do</option>
                             </select>
                         </div>
                         <div class="form-group">
                             <label for="systemprompt">System Prompt:</label>
                             <textarea id="systemprompt" class="form-control" rows="4" placeholder="Enter system instructions"></textarea>
+                            <div class="mt-2">
+                                <button class="btn btn-outline-secondary" type="button" onclick="saveSystemPrompt()">Save</button>
+                                <button class="btn btn-outline-secondary ml-2" type="button" onclick="setDefaultPrompt()">Default</button>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label for="pastMessages">Past Messages:</label>
@@ -46,8 +48,12 @@
                             <span id="pastMessagesValue">30</span>
                         </div>
                         <div class="form-group">
-                            <label for="maxtokens">Maximum Tokens:</label>
-                            <input type="number" class="form-control" id="maxtokens" min="1" value="256">
+                            <label>Prompt Token Count:</label>
+                            <div id="promptTokenCount"></div>
+                            <label>Completion Token Count:</label>
+                            <div id="completionTokenCount"></div>
+                            <label>Total Token Count:</label>
+                            <div id="totalTokenCount">0 / 1,28,000</div>
                         </div>
                     </div>
                 </div>

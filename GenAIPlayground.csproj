@@ -49,6 +49,9 @@
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>packages\System.ValueTuple.4.5.0\lib\net47\System.ValueTuple.dll</HintPath>
+    </Reference>
     <Reference Include="System.Web.DynamicData" />
     <Reference Include="System.Web.Entity" />
     <Reference Include="System.Web.ApplicationServices" />
@@ -102,6 +105,21 @@
     <Reference Include="Newtonsoft.Json">
       <HintPath>packages\Newtonsoft.Json.13.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="Tiktoken, Version=2.0.3.0, Culture=neutral, PublicKeyToken=56a250a977deb371, processorArchitecture=MSIL">
+      <HintPath>packages\Tiktoken.2.0.3\lib\net462\Tiktoken.dll</HintPath>
+    </Reference>
+    <Reference Include="Tiktoken.Core, Version=2.0.3.0, Culture=neutral, PublicKeyToken=56a250a977deb371, processorArchitecture=MSIL">
+      <HintPath>packages\Tiktoken.Core.2.0.3\lib\net462\Tiktoken.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Tiktoken.Encodings.Abstractions, Version=2.0.3.0, Culture=neutral, PublicKeyToken=56a250a977deb371, processorArchitecture=MSIL">
+      <HintPath>packages\Tiktoken.Encodings.Abstractions.2.0.3\lib\net462\Tiktoken.Encodings.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="Tiktoken.Encodings.cl100k, Version=2.0.3.0, Culture=neutral, PublicKeyToken=56a250a977deb371, processorArchitecture=MSIL">
+      <HintPath>packages\Tiktoken.Encodings.cl100k.2.0.3\lib\net462\Tiktoken.Encodings.cl100k.dll</HintPath>
+    </Reference>
+    <Reference Include="Tiktoken.Encodings.o200k, Version=2.0.3.0, Culture=neutral, PublicKeyToken=56a250a977deb371, processorArchitecture=MSIL">
+      <HintPath>packages\Tiktoken.Encodings.o200k.2.0.3\lib\net462\Tiktoken.Encodings.o200k.dll</HintPath>
+    </Reference>
     <Reference Include="WebGrease">
       <Private>True</Private>
       <HintPath>packages\WebGrease.1.6.0\lib\WebGrease.dll</HintPath>
@@ -153,6 +171,7 @@
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
     <None Include="Scripts\jquery-3.7.0.intellisense.js" />
+    <Content Include="Scripts\tiktoken\chunk-PEBACC3C.js" />
     <Content Include="Scripts\GenAIChat.js" />
     <Content Include="Scripts\jquery-3.7.0.js" />
     <Content Include="Scripts\jquery-3.7.0.min.js" />
@@ -163,6 +182,7 @@
     <Content Include="Scripts\jquery.validate.min.js" />
     <Content Include="Scripts\jquery.validate.unobtrusive.js" />
     <Content Include="Scripts\jquery.validate.unobtrusive.min.js" />
+    <Content Include="Scripts\tiktoken\lite.min.js" />
     <Content Include="Scripts\modernizr-2.8.3.js" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
