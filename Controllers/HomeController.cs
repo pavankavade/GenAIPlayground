@@ -12,6 +12,7 @@ using System.Web;
 using System.Web.Mvc;
 using System.Configuration;
 using System.Threading;
+using System.Runtime.InteropServices.ComTypes;
 
 
 namespace WebApplication4.Controllers
@@ -38,44 +39,32 @@ namespace WebApplication4.Controllers
             ViewBag.Message = "Your contact page.";
             return View();
         }
-
+        public class ChatMessage
+        {
+            public string role { get; set; }
+            public string content { get; set; }
+        }
 
         [HttpGet] // Change to GET request for SSE
-        public async Task<ActionResult> GetAIResponse(string userMessage, string systemPrompt)
+        public async Task<ActionResult> GetAIResponse(string userMessage, string systemPrompt, int pastMessages = 30, string chatData = null)
         {
             using (var httpClient = new HttpClient())
             {
                 httpClient.DefaultRequestHeaders.Add("api-key", apiKey);
                 // In your GetAIResponse action:
                 HttpContext.Response.Headers.Remove("Content-Encoding");
+                // Parse the chatData JSON string
+                var pastMessagesData = JsonConvert.DeserializeObject<List<ChatMessage>>(chatData) ?? new List<ChatMessage>();
+                // Take only the last 'pastMessages' number of messages
+                var recentMessages = pastMessagesData.Skip(Math.Max(0, pastMessagesData.Count - pastMessages)).ToList();
 
                 var payload = new
                 {
-                    messages = new object[]
-                    {
-                        new {
-                            role = "system",
-                            content = new object[] {
-                                new {
-                                    type = "text",
-                                    text = systemPrompt // Use systemPrompt here
-                                }
-                            }
-                        },
-                        new {
-                            role = "user",
-                            content = new object[] {
-                                new {
-                                    type = "text",
-                                    text = userMessage // Use userMessage here
-                                }
-                            }
-                        }
-                    },
+                    messages = recentMessages, // Use recentMessages in the payload
                     temperature = 0.7,
                     top_p = 0.95,
-                    max_tokens = 800,
-                    stream = true // Enable streaming
+                    max_tokens = 4000,
+                    stream = true
                 };
 
                 var response = await httpClient.PostAsync($"{endpoint}/openai/deployments/{deploymentId}/chat/completions?api-version=2024-02-15-preview",
