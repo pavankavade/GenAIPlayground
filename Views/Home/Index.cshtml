@@ -3,31 +3,58 @@
 }
 
 <main>
-    <section class="row" aria-labelledby="aspnetTitle">
-        <h1 id="title">ASP.NET</h1>
-        <p class="lead">ASP.NET is a free web framework for building great Web sites and Web applications using HTML, CSS and JavaScript.</p>
-        <p><a href="https://asp.net" class="btn btn-primary btn-md">Learn more &raquo;</a></p>
-    </section>
 
-    <div class="row">
-        <section class="col-md-4" aria-labelledby="gettingStartedTitle">
-            <h2 id="gettingStartedTitle">Getting started</h2>
-            <p>
-                ASP.NET MVC gives you a powerful, patterns-based way to build dynamic websites that
-                enables a clean separation of concerns and gives you full control over markup
-                for enjoyable, agile development.
-            </p>
-            <p><a class="btn btn-outline-dark" href="https://go.microsoft.com/fwlink/?LinkId=301865">Learn more &raquo;</a></p>
-        </section>
-        <section class="col-md-4" aria-labelledby="librariesTitle">
-            <h2 id="librariesTitle">Get more libraries</h2>
-            <p>NuGet is a free Visual Studio extension that makes it easy to add, remove, and update libraries and tools in Visual Studio projects.</p>
-            <p><a class="btn btn-outline-dark" href="https://go.microsoft.com/fwlink/?LinkId=301866">Learn more &raquo;</a></p>
-        </section>
-        <section class="col-md-4" aria-labelledby="hostingTitle">
-            <h2 id="hostingTitle">Web Hosting</h2>
-            <p>You can easily find a web hosting company that offers the right mix of features and price for your applications.</p>
-            <p><a class="btn btn-outline-dark" href="https://go.microsoft.com/fwlink/?LinkId=301867">Learn more &raquo;</a></p>
-        </section>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            Chat
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-secondary dropdown-toggle" type="button" id="modelDropdown"
+                                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    gpt-4o-mini-2024-07-18
+                                </button>
+                                <div class="dropdown-menu" aria-labelledby="modelDropdown">
+                                    <a class="dropdown-item" href="#">gpt-4o-mini-2024-07-18</a>
+                                    <a class="dropdown-item" href="#">Another model</a>
+                                    <a class="dropdown-item" href="#">Yet another model</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="chatbox"></div>
+                        <div class="input-group">
+                            <input type="text" id="userinput" class="form-control" placeholder="Enter user message...">
+                            <div class="input-group-append">
+                                <button class="btn btn-primary" type="button" onclick="sendMessage()">Run (Ctrl + ⏎)</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">Configuration</div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="systemprompt">System Prompt:</label>
+                            <textarea id="systemprompt" class="form-control" rows="4" placeholder="Enter system instructions"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="temperature">Temperature:</label>
+                            <input type="range" class="custom-range" id="temperature" min="0" max="1" step="0.1" value="1">
+                        </div>
+                        <div class="form-group">
+                            <label for="maxtokens">Maximum Tokens:</label>
+                            <input type="number" class="form-control" id="maxtokens" min="1" value="256">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </main>
