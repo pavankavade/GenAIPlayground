@@ -107,20 +107,10 @@ namespace WebApplication4.Controllers
                             var data = line.Substring("data: ".Length);
                             dynamic jsonData = JsonConvert.DeserializeObject(data);
                             string content = jsonData.choices[0].delta.content;
-                            if (!string.IsNullOrWhiteSpace(content))
-                            {
-                                // Add a space ONLY if needed
-                                //if (!previousContent.EndsWith(" ") && !content.StartsWith(" "))
-                                //{
-                                //    content = " " + content;
-                                //}
-
-                                // Return the 'content' property within 'delta'
-                                Response.Write($"data: {content}");
-                                Response.Flush();
-                                Thread.Sleep(10);
-                                previousContent = content;
-                            }
+                            Response.Write($"data: {content}");
+                            Response.Flush();
+                            Thread.Sleep(10);
+                            previousContent = content;
                         }
                     }
                 }

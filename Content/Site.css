@@ -14,7 +14,7 @@
 }
 
 #chatbox {
-    height: 400px;
+    height: 500px;
     overflow-y: auto;
     padding: 10px;
 }
@@ -42,3 +42,43 @@
         background-color: #666;
         border-color: #777;
     }
+
+
+/* Add this CSS to your stylesheet */
+.user-message {
+    background-color: #f0f0f8; /* Light background for user messages */
+}
+
+.assistant-message {
+    background-color: #e8f0fe; /* Slightly darker background for assistant messages */
+}
+
+.user-message .card-text {
+    color: #333; /* Dark text for user messages */
+}
+
+.assistant-message .card-text {
+    color: #222; /* Slightly lighter text for assistant messages */
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+    .user-message {
+        background-color: #282c34; /* Darker background for user messages in dark mode */
+    }
+
+    .assistant-message {
+        background-color: #20232a; /* Even darker background for assistant messages in dark mode */
+    }
+
+        .user-message .card-text,
+        .assistant-message .card-text {
+            color: #fff; /* White text for both types of messages in dark mode */
+        }
+}
+
+.copy-button {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+}
