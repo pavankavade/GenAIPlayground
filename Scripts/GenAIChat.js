@@ -4,55 +4,50 @@ function sendMessage() {
     $("#userinput").val("");
 
     var systemPrompt = $("#systemprompt").val();
+    var aiMessageElement = null; // Variable to store the AI message element
 
     // Change button to stop icon
     var runButton = $(".btn-primary");
     runButton.html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Stop');
     runButton.prop('disabled', true);
 
-    fetch('/Home/GetAIResponse', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ userMessage: userMessage, systemPrompt: systemPrompt })
-    })
-        .then(async response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
+    var eventSource = new EventSource('/Home/GetAIResponse?' + $.param({ userMessage: userMessage, systemPrompt: systemPrompt }));
 
-            const reader = response.body.getReader();
-            let decoder = new TextDecoder();
-            let buffer = "";
-
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) {
-                    break;
-                }
-
-                buffer += decoder.decode(value, { stream: true });
-                const lines = buffer.split("data: ");
-                buffer = lines.pop(); // Store the last (potentially incomplete) line
-
-                for (const line of lines) {
-                    if (line.trim() !== "") {
-                        // Simulate character-by-character streaming
-                        for (let i = 0; i < line.length; i++) {
-                            await new Promise(resolve => setTimeout(resolve, 50)); // Adjust delay as needed
-                            $("#chatbox").append(line[i]);
-                        }
+    eventSource.onmessage = function (event) {
+        if (event.data !== "[DONE]") {
+            try {
+                var jsonContent = JSON.parse(event.data);
+                if (jsonContent.choices && jsonContent.choices[0].delta && jsonContent.choices[0].delta.content) {
+                    if (aiMessageElement === null) {
+                        // Create the initial AI message element
+                        aiMessageElement = $("<p><b>AI:</b> " + jsonContent.choices[0].delta.content + "</p>");
+                        $("#chatbox").append(aiMessageElement);
+                    } else {
+                        // Append content to the existing AI message element
+                        aiMessageElement.html(aiMessageElement.html() + jsonContent.choices[0].delta.content);
                     }
+                    $("#chatbox").scrollTop($("#chatbox")[0].scrollHeight); // Scroll to bottom
                 }
+            } catch (error) {
+                console.error("Error parsing JSON:", error);
             }
-        })
-        .catch(error => {
-            console.error("Error:", error);
-        })
-        .finally(() => {
-            // Change button back to run
+        } else {
+            // Reset button state
             runButton.html('Run (Ctrl + ⏎)');
             runButton.prop('disabled', false);
-        });
+            eventSource.close();
+        }
+    };
+
+    eventSource.onerror = function (error) {
+        console.error("SSE Error:", error);
+        // Reset button state
+        runButton.html('Run (Ctrl + ⏎)');
+        runButton.prop('disabled', false);
+        eventSource.close();
+    };
+
+    eventSource.onopen = function () {
+        // Connection opened successfully
+    };
 }
